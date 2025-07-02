@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://spotdraft-1x72.onrender.com",
+  baseURL: "https://pdf-collaborator-smhg.onrender.com",
 });
 
 // Add request interceptor for tokens
