@@ -35,6 +35,7 @@ exports.getUserPDFs = async (req, res) => {
 exports.sharePDF = async (req, res) => {
   try {
     const { pdfId, emails } = req.body;
+    console.log("📧 Share request received - pdfId:", pdfId, "emails:", emails);
     const pdf = await PDF.findById(pdfId);
     if (!pdf) return res.status(404).json({ message: "PDF not found" });
 
@@ -49,7 +50,7 @@ exports.sharePDF = async (req, res) => {
     pdf.shareableLink = uniqueLink;
     await pdf.save();
 
-    emails.forEach((email) => sendShareEmail(email, uniqueLink));   //Send email notification to each recipient
+    await Promise.all(emails.map((email) => sendShareEmail(email, uniqueLink)));   //Send email notification to each recipient
 
     res.json({
       message: "PDF shared successfully and email sent!",
