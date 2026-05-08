@@ -50,12 +50,18 @@ exports.sharePDF = async (req, res) => {
     pdf.shareableLink = uniqueLink;
     await pdf.save();
 
-    await Promise.all(emails.map((email) => sendShareEmail(email, uniqueLink)));   //Send email notification to each recipient
+    // Respond immediately — don't block on email delivery
+    res.json({ message: "PDF shared successfully!", link: uniqueLink });
 
-    res.json({
-      message: "PDF shared successfully and email sent!",
-      link: uniqueLink,
-    });
+    // Send emails in the background
+    Promise.allSettled(emails.map((email) => sendShareEmail(email, uniqueLink)))
+      .then((results) => {
+        results.forEach((result, i) => {
+          if (result.status === "rejected") {
+            console.error(`❌ Failed to send email to ${emails[i]}:`, result.reason?.message || result.reason);
+          }
+        });
+      });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error });
   }
